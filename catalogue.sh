@@ -28,7 +28,7 @@ VALIDATE(){
 }
 
 dnf module disable nodejs -y &>>$LOGS_FILE
-VALIDATE $? "Diabling nodejs default version"
+VALIDATE $? "Disabling nodejs default version"
 
 dnf module enable nodejs:20 -y &>>$LOGS_FILE
 VALIDATE $? "Enabling nodejs 20"
@@ -65,8 +65,9 @@ VALIDATE $? "installing dependencies"
 cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service
 VALIDATE $? "created systemctl service"
 
+sudo systemctl unmask catalogue
 systemctl daemon-reload
-systemctl enable catalogue 
+systemctl enable catalogue
 systemctl start catalogue
 VALIDATE $? "starting and enabling catalogue"
 
