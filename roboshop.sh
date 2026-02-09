@@ -2,7 +2,8 @@
 
 SG_ID="sg-0d19e8684e6f602f7" #replace with your ID
 AMI_ID="ami-0220d79f3f480ecf5"
-
+ZONE_ID="Z074576211J1G0FY8HEVU"
+DOMAIN_NAME="kayasiri.online"
 for instance in $@
 do 
     INSTANCE_ID=$( aws ec2 run-instances \
@@ -21,7 +22,7 @@ do
              --output text
 
          )
-
+            RECORD_NAME="$DOMAIN_NAME" #kayasiri.online
     else
           IP=$(
             aws ec2 describe-instances \
@@ -29,9 +30,36 @@ do
             --query 'Reservations[].Instances[].PrivateIpAddress' \
              --output text
           )
+
+          RECORD_NAME="$instance.$DOMAIN_NAME" #mongodb.kayasiri.online
     fi
 
     echo  " IP Address is $IP"
+
+    aws route53 change-resource-record-sets \
+    --hosted-zone-id $ZONE_ID \
+    --change-batch '
+    {
+       "Comment": "updating record",
+       "Changes": [
+            {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "'$RECORD_NAME'",
+                "Type": "A",
+                "TTL": 1,
+                "ResourceRecords": [
+                {
+                    "Value": "'$IP'"
+                }
+                ]
+            }
+            }
+        ]
+    }
+    '
+      echo "record updated for $instance"
+
           
     
 done
