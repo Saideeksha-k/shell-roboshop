@@ -1,19 +1,19 @@
 #!/bin/bash
 
-SG_ID="sg-0d19e8684e6f602f7"
+SG_ID="sg-0d19e8684e6f602f7" #replace with your ID
 AMI_ID="ami-0220d79f3f480ecf5"
 
 for instance in $@
 do 
     INSTANCE_ID=$( aws ec2 run-instances \
     --image-id $AMI_ID \
-    --instance-type t3.micro \
+    --instance-type "t3.micro" \
     --security-group-ids $SG_ID \
-    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=$instance}]' \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$instance}]" \
     --query 'Instances[0].InstanceId' \
     --output text )
 
-    if [ "$instance" == "frontend"]; then
+    if [ $instance == "frontend" ]; then
          IP=$(
             aws ec2 describe-instances \
             --instance-ids $INSTANCE_ID \
@@ -31,7 +31,7 @@ do
           )
     fi
 
-    echo ip adress is $IP
+    echo  " IP Address is $IP"
           
     
 done
