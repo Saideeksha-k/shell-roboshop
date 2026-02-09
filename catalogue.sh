@@ -4,6 +4,7 @@ USER_ID=$(id -u)
 LOGS_FOLDER="/var/log/shell-roboshop"
 LOGS_FILE="$LOGS_FOLDER/$0.log"
 SCRIPT_DIR=$PWD
+MONGODB_HOST=mongodb.kayasiri.online
 R='\e[31m'
 G='\e[32m'
 Y='\e[33m'
@@ -69,7 +70,20 @@ systemctl enable catalogue
 systemctl start catalogue
 VALIDATE $? "starting and enabling catalogue"
 
+CP $SCRIPT_DIR/mongo.repo /etc/yum.repos.d/mongo.repo
+dnf install mongodb-mongosh -y
 
+INDEX=$(mongosh --host $MONGODB_HOST --quiet --eval 'db.getMongo().getDBNames().indexof("catalogue")')
+
+if [ $INDEX -le 0 ]; then
+    mongosh --host $MONGODB_HOST </app/db/master-data.js
+    VALIDATE $? "loading products"
+else
+  echo -e "products already installed..$Y skipping $N" 
+fi  
+
+systemctl restart catalogue
+VALIDATE $? "Restarting catalogue"
 
 
 
